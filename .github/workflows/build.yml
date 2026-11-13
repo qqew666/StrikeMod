@@ -30,6 +30,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
 
       - name: Build
         run: |
@@ -43,39 +45,37 @@ jobs:
           for j in $(find ~/.gradle/caches/fabric-loom -name "*.jar" | grep -v sources); do
             if unzip -l "$j" 2>/dev/null | grep -q "net/minecraft/world/entity/Entity.class"; then JAR="$j"; break; fi
           done
-          echo "JAR=$JAR"
           {
+            echo "JAR=$JAR"
             echo "===== CLASS NAMES OF INTEREST ====="
-            unzip -l "$JAR" 2>/dev/null | grep -E "NbtComponent|ListComponent|ComponentList|WrittenBook|LoreComponent|CustomData|InteractionResult|Filterable" | awk '{print $4}'
+            unzip -l "$JAR" 2>/dev/null | grep -E "NbtComponent|CustomData|ListComponent|ComponentList|ItemLore|WrittenBook|LoreComponent|Filterable|InteractionResult" | awk '{print $4}'
             echo "===== API ====="
             for c in net.minecraft.world.entity.Entity \
                      net.minecraft.server.level.ServerPlayer \
                      net.minecraft.server.MinecraftServer \
                      net.minecraft.commands.CommandSourceStack \
                      net.minecraft.world.level.Level \
+                     net.minecraft.world.level.ServerLevel \
                      net.minecraft.world.level.block.entity.BlockEntity \
+                     net.minecraft.world.level.block.entity.ChestBlockEntity \
                      net.minecraft.core.component.DataComponents \
                      net.minecraft.nbt.CompoundTag \
-                     net.minecraft.nbt.NbtComponent \
-                     net.minecraft.core.component.NbtComponent \
-                     net.minecraft.network.chat.ComponentList \
-                     net.minecraft.network.chat.ListComponent \
+                     net.minecraft.world.item.component.CustomData \
+                     net.minecraft.world.item.ItemLore \
                      net.minecraft.network.chat.Component \
                      net.minecraft.world.item.ItemStack \
-                     net.minecraft.world.item.Inventory \
                      net.minecraft.world.Container \
                      net.minecraft.core.Registry \
                      net.minecraft.world.level.levelgen.Heightmap \
-                     net.minecraft.world.entity.player.Inventory ; do
+                     net.minecraft.server.network.Filterable \
+                     com.mojang.authlib.GameProfile ; do
               echo "--- $c ---"
-              javap -cp "$JAR" "$c" 2>&1 | grep -E "public|protected|class |interface " | head -70
+              javap -cp "$JAR" "$c" 2>&1 | grep -E "public|protected|class |interface " | head -80
             done
             echo "===== SOUND EVENTS ====="
-            javap -cp "$JAR" net.minecraft.sounds.SoundEvents 2>&1 | grep -E "BREAK|CLICK|NOTE_BLOCK|CHIME|EXPLODE|PICKUP|LEVELUP|PORTAL|POP" | head -60
+            javap -cp "$JAR" net.minecraft.sounds.SoundEvents 2>&1 | grep -E "BREAK|CLICK|NOTE_BLOCK|CHIME|EXPLODE|PICKUP|LEVELUP|PORTAL|POP|ITEM" | head -60
             echo "===== WRITTEN BOOK CONTENT ====="
             javap -cp "$JAR" net.minecraft.world.item.component.WrittenBookContent 2>&1 | head -30
-            echo "===== COMPONENT LIST / LORE ====="
-            javap -cp "$JAR" net.minecraft.network.chat.ComponentList 2>&1 | head -25
           } | tee api-dump.txt
 
       - name: Upload API dump

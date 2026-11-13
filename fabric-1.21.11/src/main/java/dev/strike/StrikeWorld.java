@@ -80,8 +80,8 @@ public final class StrikeWorld {
 			for (int dz = -RADIUS; dz <= RADIUS; dz++) {
 				int x = spawn.getX() + dx;
 				int z = spawn.getZ() + dz;
-				int y = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-				BlockPos pos = new BlockPos(x, y, z);
+				BlockPos pos = new BlockPos(x, 0, z);
+				pos = new BlockPos(x, level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos), z);
 				BlockState here = level.getBlockState(pos);
 				BlockState below = level.getBlockState(pos.below());
 				if (here.isAir() && !below.isAir() && below.getFluidState().isEmpty()) {

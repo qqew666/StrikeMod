@@ -19,17 +19,24 @@ public class StrikeMod implements ModInitializer {
 	public static final String MOD_ID = "strike";
 	public static final Logger LOGGER = LoggerFactory.getLogger("Strike");
 
+	/** Текущий сервер (null, если сервера нет). */
+	private static MinecraftServer server;
+
 	@Override
 	public void onInitialize() {
 		StrikeConfig.load(FabricLoader.getInstance().getConfigDir());
 		StrikeEvents.register();
 		StrikeCommands.register();
 
-		// В начале игры ставим сундук с книгой-гайдом рядом со спавном
-		ServerLifecycleEvents.SERVER_STARTED.register(StrikeWorld::placeGuideChest);
+		// Запоминаем сервер и ставим сундук с книгой-гайдом рядом со спавном
+		ServerLifecycleEvents.SERVER_STARTED.register(started -> {
+			server = started;
+			StrikeWorld.placeGuideChest(started);
+		});
+		ServerLifecycleEvents.SERVER_STOPPED.register(stopped -> server = null);
 
 		// Подсказка при заходе на сервер
-		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, started) -> {
 			ServerPlayer player = handler.getPlayer();
 			player.displayClientMessage(Component.literal(
 					"§a§lStrike §7— мод активен. Введите §e/strike§7, чтобы получить кисть. "
@@ -39,12 +46,12 @@ public class StrikeMod implements ModInitializer {
 		LOGGER.info("Strike mod initialized (Minecraft 1.20.1)");
 	}
 
-	/** Мод активен ли для этого игрока (в одиночной игре — нет). */
-	public static boolean isMultiplayer(ServerPlayer player) {
-		MinecraftServer server = player.getServer();
-		if (server == null) {
+	/** Мод активен ли сейчас (в одиночной игре — нет). */
+	public static boolean isMultiplayer() {
+		MinecraftServer current = server;
+		if (current == null) {
 			return false;
 		}
-		return !(StrikeConfig.multiplayerOnly && server.isSingleplayer());
+		return !(StrikeConfig.multiplayerOnly && current.isSingleplayer());
 	}
 }

@@ -21,7 +21,7 @@ public final class StrikeEvents {
 			}
 
 			// Мод работает только на мультиплеере
-			if (!StrikeMod.isMultiplayer(serverPlayer)) {
+			if (!StrikeMod.isMultiplayer()) {
 				return InteractionResult.PASS;
 			}
 

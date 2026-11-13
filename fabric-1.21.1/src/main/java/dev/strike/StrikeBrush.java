@@ -4,7 +4,7 @@ import dev.strike.common.StrikeBalance;
 import dev.strike.common.StrikeText;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.NbtComponent;
-import net.minecraft.core.nbt.CompoundTag;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ListComponent;
 import net.minecraft.world.item.ItemStack;

@@ -30,7 +30,8 @@ public final class StrikeRequest {
 	private StrikeRequest() {
 	}
 
-	private record Pending(BlockPos pos, int chance) {
+	/** Отложенный запрос: позиция, шанс и мир, в котором сделан запрос. */
+	private record Pending(BlockPos pos, int chance, ServerLevel level) {
 	}
 
 	/** Обрабатывает клик по блоку кистью. */
@@ -56,10 +57,10 @@ public final class StrikeRequest {
 
 		level.sendParticles(ParticleTypes.CRIT, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
 				10, 0.3, 0.3, 0.3, 0.0);
-		level.playSound(null, pos, SoundEvents.BLOCK_LEVER_CLICK, SoundSource.BLOCKS, 0.7f, 1.5f);
+		level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK, SoundSource.BLOCKS, 0.7f, 1.5f);
 
 		if (StrikeConfig.requireConfirmation) {
-			PENDING.put(player.getUUID(), new Pending(pos.immutable(), chance));
+			PENDING.put(player.getUUID(), new Pending(pos.immutable(), chance, level));
 			player.displayClientMessage(Component.literal(StrikeText.confirmHint()), false);
 		} else {
 			resolve(player, level, pos, stack, chance);
@@ -80,7 +81,7 @@ public final class StrikeRequest {
 			return 0;
 		}
 
-		ServerLevel level = player.getLevel();
+		ServerLevel level = pending.level();
 		BlockState state = level.getBlockState(pending.pos());
 		if (state.isAir()) {
 			player.displayClientMessage(Component.literal(StrikeText.noPendingRequest()), true);
@@ -110,13 +111,13 @@ public final class StrikeRequest {
 			level.destroyBlock(pos, false);
 			level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
 					12, 0.35, 0.35, 0.35, 0.0);
-			level.playSound(null, pos, SoundEvents.BLOCK_BREAK, SoundSource.BLOCKS, 0.9f, 1.2f);
+			level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING, SoundSource.BLOCKS, 0.9f, 1.4f);
 			StrikeBrush.addUsed(stack);
 			player.displayClientMessage(Component.literal(StrikeText.success()), true);
 		} else {
 			level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
 					10, 0.25, 0.25, 0.25, 0.01);
-			level.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_BASS, SoundSource.BLOCKS, 0.8f, 0.7f);
+			level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS, SoundSource.BLOCKS, 0.8f, 0.7f);
 			player.displayClientMessage(Component.literal(StrikeText.failure()), true);
 		}
 	}

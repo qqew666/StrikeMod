@@ -50,7 +50,7 @@ public final class StrikeCommands {
 	/** {@code /strike} — выдать кисть или показать её состояние. */
 	private static int main(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
 		ServerPlayer player = source.getPlayerOrException();
-		if (!StrikeMod.isMultiplayer(player)) {
+		if (!StrikeMod.isMultiplayer()) {
 			source.sendFailure(Component.literal(StrikeText.multiplayerOnly()));
 			return 0;
 		}
@@ -79,7 +79,7 @@ public final class StrikeCommands {
 	/** {@code /strike upgrade} — улучшить кисть. */
 	private static int upgrade(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
 		ServerPlayer player = source.getPlayerOrException();
-		if (!StrikeMod.isMultiplayer(player)) {
+		if (!StrikeMod.isMultiplayer()) {
 			source.sendFailure(Component.literal(StrikeText.multiplayerOnly()));
 			return 0;
 		}
@@ -158,7 +158,7 @@ public final class StrikeCommands {
 
 	/** {@code /strike give <player>} — выдать кисть другому игроку. */
 	private static int give(CommandSourceStack source, ServerPlayer target) {
-		if (!StrikeMod.isMultiplayer(target)) {
+		if (!StrikeMod.isMultiplayer()) {
 			source.sendFailure(Component.literal(StrikeText.multiplayerOnly()));
 			return 0;
 		}
