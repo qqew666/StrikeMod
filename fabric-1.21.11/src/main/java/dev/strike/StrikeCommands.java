@@ -59,17 +59,18 @@ public final class StrikeCommands {
 		if (brush == null) {
 			player.getInventory().add(StrikeBrush.create(1));
 			brush = findBrush(player);
-			source.sendSuccess(() -> Component.literal(StrikeText.brushGiven()), true);
+			source.sendSuccess(() -> Component.literal(StrikeText.brushGiven()), false);
 		} else {
 			StrikeBrush.refresh(brush);
 		}
 
-		if (brush != null) {
-			int level = StrikeBrush.getLevel(brush);
+		final ItemStack current = brush;
+		if (current != null) {
+			final int level = StrikeBrush.getLevel(current);
 			source.sendSuccess(() -> Component.literal(StrikeText.info(
 					level,
 					StrikeBalance.chancePercent(level),
-					StrikeBrush.getUsed(brush),
+					StrikeBrush.getUsed(current),
 					StrikeBalance.capacity(level))), false);
 		}
 		return 1;
