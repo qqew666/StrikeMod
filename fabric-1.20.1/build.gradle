@@ -1,0 +1,49 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+}
+
+base {
+	archivesName = "strike-fabric-1.20.1"
+}
+
+loom {
+	mods {
+		"strike" {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+// Общий код (чистая Java) подключается к каждой версии
+sourceSets {
+	main {
+		java {
+			srcDir rootProject.file('common/src/main/java')
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${mc_1_20_1}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${fapi_1_20_1}"
+}
+
+processResources {
+	def props = project.properties
+	filesMatching("fabric.mod.json") {
+		expand props
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = 'UTF-8'
+	it.options.release = 17
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}

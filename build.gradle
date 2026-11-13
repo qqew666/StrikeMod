@@ -1,0 +1,21 @@
+// Корневой проект: общие настройки для всех модулей.
+subprojects {
+	apply plugin: 'java'
+
+	group = project.findProperty('group') ?: 'dev.strike'
+	version = project.findProperty('mod_version') ?: '1.0.0'
+
+	repositories {
+		mavenCentral()
+	}
+}
+
+// Удобная задача: собрать все версии сразу
+tasks.register('buildAll') {
+	group = 'build'
+	description = 'Собирает мод под все поддерживаемые версии Minecraft'
+	dependsOn ':fabric-1.20.1:build',
+			':fabric-1.21.1:build',
+			':fabric-1.21.11:build',
+			':fabric-26.3:build'
+}

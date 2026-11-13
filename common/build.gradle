@@ -1,0 +1,10 @@
+// Общий модуль: чистая Java без Minecraft API.
+// Исходники этого модуля подключаются к каждой версии через sourceSets.
+plugins {
+	id 'java-library'
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
