@@ -43,7 +43,7 @@ public final class StrikeCommands {
 							.requires(source -> source.hasPermission(2))
 							.then(Commands.argument("player", EntityArgument.player())
 									.executes(context -> give(context.getSource(),
-											(ServerPlayer) EntityArgument.getPlayer(context, "player")))))));
+											(ServerPlayer) EntityArgument.getPlayer(context, "player"))))));
 		});
 	}
 
