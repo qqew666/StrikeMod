@@ -36,6 +36,16 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :${{ matrix.module }}:build --stacktrace
 
+      - name: Check manifest (singleplayer + version)
+        run: |
+          JAR=$(ls ${{ matrix.module }}/build/libs/*.jar | grep -v sources | head -1)
+          unzip -p "$JAR" fabric.mod.json > /tmp/fm.json
+          cat /tmp/fm.json
+          grep -q '"environment": "\*"' /tmp/fm.json || { echo "::error::environment должен быть * (иначе мод не грузится в одиночке)"; exit 1; }
+          VER=$(grep -E '^mod_version=' gradle.properties | cut -d= -f2)
+          grep -q "\"version\": \"$VER\"" /tmp/fm.json || { echo "::error::версия в манифесте != $VER"; exit 1; }
+          echo "OK: $(basename "$JAR")"
+
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
