@@ -36,7 +36,10 @@ public class StrikeMod implements ModInitializer {
 			server = started;
 			guidePlaced = false;
 		});
-		ServerLifecycleEvents.SERVER_STOPPED.register(stopped -> server = null);
+		ServerLifecycleEvents.SERVER_STOPPED.register(stopped -> {
+			server = null;
+			StrikeRequest.reset();
+		});
 
 		// При входе игрока: ставим сундук с книгой-гайдом и подсказываем команды
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, started) -> {

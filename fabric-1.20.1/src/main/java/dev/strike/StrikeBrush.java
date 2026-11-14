@@ -1,6 +1,7 @@
 package dev.strike;
 
 import dev.strike.common.StrikeBalance;
+import dev.strike.common.StrikeConfig;
 import dev.strike.common.StrikeText;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -20,6 +21,7 @@ public final class StrikeBrush {
 	private static final String KEY_BRUSH = "Brush";
 	private static final String KEY_LEVEL = "Level";
 	private static final String KEY_USED = "Used";
+	private static final String KEY_RADIUS = "Radius";
 
 	private StrikeBrush() {
 	}
@@ -31,6 +33,7 @@ public final class StrikeBrush {
 		root.putBoolean(KEY_BRUSH, true);
 		root.putInt(KEY_LEVEL, StrikeBalance.clampLevel(level));
 		root.putInt(KEY_USED, 0);
+		root.putInt(KEY_RADIUS, 1);
 		stack.getOrCreateTag().put(ROOT, root);
 		refresh(stack);
 		return stack;
@@ -59,6 +62,12 @@ public final class StrikeBrush {
 		return root(stack).getInt(KEY_USED);
 	}
 
+	/** Выбранный радиус удаления (1 = только целевой блок). */
+	public static int getRadius(ItemStack stack) {
+		int radius = root(stack).getInt(KEY_RADIUS);
+		return radius <= 0 ? 1 : StrikeBalance.clampRadius(radius);
+	}
+
 	/** Устанавливает уровень кисти и сбрасывает счётчик удалённых блоков. */
 	public static void setLevel(ItemStack stack, int level) {
 		CompoundTag tag = stack.getOrCreateTag();
@@ -70,12 +79,32 @@ public final class StrikeBrush {
 	}
 
 	/** Увеличивает счётчик удалённых блоков. */
-	public static void addUsed(ItemStack stack) {
+	public static void addUsed(ItemStack stack, int count) {
+		if (count <= 0) {
+			return;
+		}
 		CompoundTag tag = stack.getOrCreateTag();
 		CompoundTag root = tag.getCompound(ROOT);
-		root.putInt(KEY_USED, root.getInt(KEY_USED) + 1);
+		root.putInt(KEY_USED, root.getInt(KEY_USED) + count);
 		tag.put(ROOT, root);
 		refresh(stack);
+	}
+
+	/** Устанавливает радиус удаления. */
+	public static void setRadius(ItemStack stack, int radius) {
+		CompoundTag tag = stack.getOrCreateTag();
+		CompoundTag root = tag.getCompound(ROOT);
+		root.putInt(KEY_RADIUS, StrikeBalance.clampRadius(radius));
+		tag.put(ROOT, root);
+		refresh(stack);
+	}
+
+	/** Переключает радиус по кругу (1 → 2 → … → max → 1) и возвращает новый. */
+	public static int cycleRadius(ItemStack stack) {
+		int max = Math.max(1, StrikeConfig.maxRadius);
+		int next = getRadius(stack) % max + 1;
+		setRadius(stack, next);
+		return next;
 	}
 
 	private static CompoundTag root(ItemStack stack) {
@@ -89,7 +118,8 @@ public final class StrikeBrush {
 		int used = getUsed(stack);
 		int capacity = StrikeBalance.capacity(level);
 		int chance = StrikeBalance.chancePercent(level);
-		int remaining = Math.max(0, capacity - used);
+		int radius = getRadius(stack);
+		int side = StrikeBalance.radiusSide(radius);
 
 		CompoundTag tag = stack.getOrCreateTag();
 		CompoundTag display = tag.getCompound("display");
@@ -100,6 +130,13 @@ public final class StrikeBrush {
 				+ "%\",\"italic\":false}"));
 		lore.add(StringTag.valueOf("{\"text\":\"§7Удалено блоков: §f" + used + "§7/§f" + capacity
 				+ "\",\"italic\":false}"));
+		if (StrikeBalance.radiusAvailable(level)) {
+			lore.add(StringTag.valueOf("{\"text\":\"§7Радиус: §d" + radius + " §8(§d" + side + "×" + side
+					+ "×" + side + "§8) §7ПКМ — изменить\",\"italic\":false}"));
+		} else {
+			lore.add(StringTag.valueOf("{\"text\":\"§8Радиус откроется на "
+					+ StrikeConfig.radiusUnlockLevel + " уровне\",\"italic\":false}"));
+		}
 		display.put("Lore", lore);
 
 		tag.put("display", display);

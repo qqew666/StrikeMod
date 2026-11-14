@@ -46,18 +46,18 @@ public final class StrikeBrush {
 		if (stack == null || stack.isEmpty()) {
 			return false;
 		}
-		return root(stack).getBoolean(KEY_BRUSH).orElse(false);
+		return root(stack).getBoolean(KEY_BRUSH).orElse(false).orElse(false);
 	}
 
 	/** Уровень кисти. */
 	public static int getLevel(ItemStack stack) {
-		int level = root(stack).getInt(KEY_LEVEL).orElse(0);
+		int level = root(stack).getInt(KEY_LEVEL).orElse(0).orElse(0);
 		return level <= 0 ? 1 : StrikeBalance.clampLevel(level);
 	}
 
 	/** Сколько блоков уже удалено этой кистью. */
 	public static int getUsed(ItemStack stack) {
-		return root(stack).getInt(KEY_USED).orElse(0);
+		return root(stack).getInt(KEY_USED).orElse(0).orElse(0);
 	}
 
 	/** Устанавливает уровень кисти и сбрасывает счётчик удалённых блоков. */

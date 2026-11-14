@@ -1,11 +1,12 @@
 package dev.strike;
 
 import dev.strike.common.StrikeBalance;
+import dev.strike.common.StrikeConfig;
 import dev.strike.common.StrikeText;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.ItemLore;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -23,6 +24,7 @@ public final class StrikeBrush {
 	private static final String KEY_BRUSH = "Brush";
 	private static final String KEY_LEVEL = "Level";
 	private static final String KEY_USED = "Used";
+	private static final String KEY_RADIUS = "Radius";
 
 	private StrikeBrush() {
 	}
@@ -35,6 +37,7 @@ public final class StrikeBrush {
 		root.putBoolean(KEY_BRUSH, true);
 		root.putInt(KEY_LEVEL, StrikeBalance.clampLevel(level));
 		root.putInt(KEY_USED, 0);
+		root.putInt(KEY_RADIUS, 1);
 		stack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
 
 		refresh(stack);
@@ -60,6 +63,12 @@ public final class StrikeBrush {
 		return root(stack).getInt(KEY_USED);
 	}
 
+	/** Выбранный радиус удаления (1 = только целевой блок). */
+	public static int getRadius(ItemStack stack) {
+		int radius = root(stack).getInt(KEY_RADIUS);
+		return radius <= 0 ? 1 : StrikeBalance.clampRadius(radius);
+	}
+
 	/** Устанавливает уровень кисти и сбрасывает счётчик удалённых блоков. */
 	public static void setLevel(ItemStack stack, int level) {
 		CompoundTag root = root(stack);
@@ -70,11 +79,30 @@ public final class StrikeBrush {
 	}
 
 	/** Увеличивает счётчик удалённых блоков. */
-	public static void addUsed(ItemStack stack) {
+	public static void addUsed(ItemStack stack, int count) {
+		if (count <= 0) {
+			return;
+		}
 		CompoundTag root = root(stack);
-		root.putInt(KEY_USED, root.getInt(KEY_USED) + 1);
+		root.putInt(KEY_USED, root.getInt(KEY_USED) + count);
 		save(stack, root);
 		refresh(stack);
+	}
+
+	/** Устанавливает радиус удаления. */
+	public static void setRadius(ItemStack stack, int radius) {
+		CompoundTag root = root(stack);
+		root.putInt(KEY_RADIUS, StrikeBalance.clampRadius(radius));
+		save(stack, root);
+		refresh(stack);
+	}
+
+	/** Переключает радиус по кругу (1 → 2 → … → max → 1) и возвращает новый. */
+	public static int cycleRadius(ItemStack stack) {
+		int max = Math.max(1, StrikeConfig.maxRadius);
+		int next = getRadius(stack) % max + 1;
+		setRadius(stack, next);
+		return next;
 	}
 
 	private static CompoundTag root(ItemStack stack) {
@@ -92,12 +120,21 @@ public final class StrikeBrush {
 		int used = getUsed(stack);
 		int capacity = StrikeBalance.capacity(level);
 		int chance = StrikeBalance.chancePercent(level);
+		int radius = getRadius(stack);
+		int side = StrikeBalance.radiusSide(radius);
 
 		stack.set(DataComponents.CUSTOM_NAME, Component.literal(StrikeText.brushName()));
 
-		ItemLore lore = new ItemLore(List.of(
-				Component.literal("§7Уровень: §f" + level + " §8| §7шанс: §a" + chance + "%"),
-				Component.literal("§7Удалено блоков: §f" + used + "§7/§f" + capacity)));
-		stack.set(DataComponents.LORE, lore);
+		List<Component> lines = new java.util.ArrayList<>();
+		lines.add(Component.literal("§7Уровень: §f" + level + " §8| §7шанс: §a" + chance + "%"));
+		lines.add(Component.literal("§7Удалено блоков: §f" + used + "§7/§f" + capacity));
+		if (StrikeBalance.radiusAvailable(level)) {
+			lines.add(Component.literal("§7Радиус: §d" + radius + " §8(§d" + side + "×" + side + "×" + side
+					+ "§8) §7ПКМ — изменить"));
+		} else {
+			lines.add(Component.literal("§8Радиус откроется на " + StrikeConfig.radiusUnlockLevel + " уровне"));
+		}
+
+		stack.set(DataComponents.LORE, new ItemLore(lines));
 	}
 }

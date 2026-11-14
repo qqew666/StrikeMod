@@ -38,6 +38,18 @@ public final class StrikeConfig {
 	/** Максимальный уровень кисти. */
 	public static int maxLevel = 10;
 
+	/** Перезарядка кисти после каждого запроса, секунды. */
+	public static int cooldownSeconds = 3;
+
+	/** Сколько секунд блок обводится рамкой перед броском шанса. */
+	public static int requestDelaySeconds = 2;
+
+	/** Уровень кисти, с которого доступен выбор радиуса (4 = после 3 улучшений). */
+	public static int radiusUnlockLevel = 4;
+
+	/** Максимальный радиус удаления: 1 — только целевой блок, 4 — область 7×7×7. */
+	public static int maxRadius = 4;
+
 	/** Базовая цена улучшения в изумрудах. */
 	public static int upgradeEmeraldBase = 4;
 
@@ -90,6 +102,10 @@ public final class StrikeConfig {
 		maxChance = integer(props, "maxChance", maxChance);
 		baseCapacity = integer(props, "baseCapacity", baseCapacity);
 		maxLevel = integer(props, "maxLevel", maxLevel);
+		cooldownSeconds = integer(props, "cooldownSeconds", cooldownSeconds);
+		requestDelaySeconds = integer(props, "requestDelaySeconds", requestDelaySeconds);
+		radiusUnlockLevel = integer(props, "radiusUnlockLevel", radiusUnlockLevel);
+		maxRadius = integer(props, "maxRadius", maxRadius);
 		upgradeEmeraldBase = integer(props, "upgradeEmeraldBase", upgradeEmeraldBase);
 		upgradeEmeraldPerLevel = integer(props, "upgradeEmeraldPerLevel", upgradeEmeraldPerLevel);
 		upgradeXpPerLevel = integer(props, "upgradeXpPerLevel", upgradeXpPerLevel);
@@ -119,6 +135,10 @@ public final class StrikeConfig {
 		props.setProperty("maxChance", String.valueOf(maxChance));
 		props.setProperty("baseCapacity", String.valueOf(baseCapacity));
 		props.setProperty("maxLevel", String.valueOf(maxLevel));
+		props.setProperty("cooldownSeconds", String.valueOf(cooldownSeconds));
+		props.setProperty("requestDelaySeconds", String.valueOf(requestDelaySeconds));
+		props.setProperty("radiusUnlockLevel", String.valueOf(radiusUnlockLevel));
+		props.setProperty("maxRadius", String.valueOf(maxRadius));
 		props.setProperty("upgradeEmeraldBase", String.valueOf(upgradeEmeraldBase));
 		props.setProperty("upgradeEmeraldPerLevel", String.valueOf(upgradeEmeraldPerLevel));
 		props.setProperty("upgradeXpPerLevel", String.valueOf(upgradeXpPerLevel));

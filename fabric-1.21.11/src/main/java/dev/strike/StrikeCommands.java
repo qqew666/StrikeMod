@@ -71,7 +71,8 @@ public final class StrikeCommands {
 					level,
 					StrikeBalance.chancePercent(level),
 					StrikeBrush.getUsed(current),
-					StrikeBalance.capacity(level))), false);
+					StrikeBalance.capacity(level),
+					StrikeBrush.getRadius(current))), false);
 		}
 		return 1;
 	}
@@ -138,7 +139,8 @@ public final class StrikeCommands {
 				level,
 				StrikeBalance.chancePercent(level),
 				StrikeBrush.getUsed(brush),
-				StrikeBalance.capacity(level))), false);
+				StrikeBalance.capacity(level),
+				StrikeBrush.getRadius(brush))), false);
 		return 1;
 	}
 

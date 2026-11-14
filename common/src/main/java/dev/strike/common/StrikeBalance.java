@@ -42,4 +42,29 @@ public final class StrikeBalance {
 	public static boolean canUpgrade(int level) {
 		return level < StrikeConfig.maxLevel;
 	}
+
+	/** Приводит радиус к допустимому диапазону 1..maxRadius. */
+	public static int clampRadius(int radius) {
+		return Math.max(1, Math.min(radius, Math.max(1, StrikeConfig.maxRadius)));
+	}
+
+	/** Размер стороны области удаления для радиуса: 1 → 1×1×1, 2 → 3×3×3, 3 → 5×5×5, 4 → 7×7×7. */
+	public static int radiusSide(int radius) {
+		return clampRadius(radius) * 2 - 1;
+	}
+
+	/** Доступен ли выбор радиуса на этом уровне кисти. */
+	public static boolean radiusAvailable(int level) {
+		return clampLevel(level) >= StrikeConfig.radiusUnlockLevel;
+	}
+
+	/** Перезарядка кисти в миллисекундах. */
+	public static long cooldownMillis() {
+		return Math.max(0, StrikeConfig.cooldownSeconds) * 1000L;
+	}
+
+	/** Задержка перед броском шанса (время обводки блока) в миллисекундах. */
+	public static long requestDelayMillis() {
+		return Math.max(0, StrikeConfig.requestDelaySeconds) * 1000L;
+	}
 }
