@@ -6,6 +6,9 @@ package dev.strike.common;
  */
 public final class StrikeBalance {
 
+	/** Сколько уровней опыта нужно за каждый целевой уровень кисти. */
+	private static final int[] XP_COST = { 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5 };
+
 	private StrikeBalance() {
 	}
 
@@ -14,7 +17,7 @@ public final class StrikeBalance {
 		return Math.max(1, Math.min(level, StrikeConfig.maxLevel));
 	}
 
-	/** Шанс удаления блока на указанном уровне, %. */
+	/** Шанс удаления блока на указанном уровне, % (без учёта редкости). */
 	public static int chancePercent(int level) {
 		int lvl = clampLevel(level);
 		int chance = StrikeConfig.baseChance + (lvl - 1) * StrikeConfig.chancePerLevel;
@@ -27,15 +30,15 @@ public final class StrikeBalance {
 		return StrikeConfig.baseCapacity * lvl;
 	}
 
-	/** Цена улучшения с указанного уровня (в изумрудах). */
-	public static int upgradeEmeraldCost(int level) {
-		int lvl = clampLevel(level);
-		return StrikeConfig.upgradeEmeraldBase + (lvl - 1) * StrikeConfig.upgradeEmeraldPerLevel;
+	/** Материал (блок и количество), необходимый для улучшения до целевого уровня. */
+	public static StrikeConfig.Material upgradeMaterial(int targetLevel) {
+		return StrikeConfig.upgradeMaterials.get(targetLevel);
 	}
 
-	/** Цена улучшения с указанного уровня (в уровнях опыта). */
-	public static int upgradeXpCost(int level) {
-		return StrikeConfig.upgradeXpPerLevel;
+	/** Сколько уровней опыта нужно за улучшение до целевого уровня. */
+	public static int upgradeXpCost(int targetLevel) {
+		int base = targetLevel >= 0 && targetLevel < XP_COST.length ? XP_COST[targetLevel] : 5;
+		return base * Math.max(0, StrikeConfig.upgradeXpPerLevel);
 	}
 
 	/** Можно ли улучшить кисть с этого уровня. */

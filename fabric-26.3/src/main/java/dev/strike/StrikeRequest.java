@@ -2,6 +2,7 @@ package dev.strike;
 
 import dev.strike.common.StrikeBalance;
 import dev.strike.common.StrikeConfig;
+import dev.strike.common.StrikeRarity;
 import dev.strike.common.StrikeText;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -85,11 +86,15 @@ public final class StrikeRequest {
 			return;
 		}
 
-		int chance = StrikeBalance.chancePercent(brushLevel);
+		String blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
+		int chance = StrikeRarity.chanceFor(brushLevel, blockId);
 		int radius = StrikeBrush.getRadius(stack);
 
+		StrikeRarity.Tier tier = StrikeRarity.tierOf(blockId);
+		String rarity = tier == StrikeRarity.Tier.COMMON ? "" : tier.title();
+
 		player.sendSystemMessage(Component.literal(
-				StrikeText.request(pos.getX(), pos.getY(), pos.getZ(), chance, capacity - used, radius)), true);
+				StrikeText.request(pos.getX(), pos.getY(), pos.getZ(), chance, capacity - used, radius, rarity)), true);
 
 		level.sendParticles(ParticleTypes.CRIT, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
 				10, 0.3, 0.3, 0.3, 0.0);

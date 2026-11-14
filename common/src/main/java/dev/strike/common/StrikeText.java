@@ -18,14 +18,17 @@ public final class StrikeText {
 
 	/* ============================ Сообщения в чат ============================ */
 
-	public static String request(int x, int y, int z, int chance, int remaining, int radius) {
+	public static String request(int x, int y, int z, int chance, int remaining, int radius, String rarity) {
 		String extra = radius > 1
 				? " §7• §dрадиус " + radius + " (" + StrikeBalance.radiusSide(radius) + "×"
 						+ StrikeBalance.radiusSide(radius) + "×" + StrikeBalance.radiusSide(radius) + ")"
 				: "";
+		String rarityLine = rarity == null || rarity.isEmpty()
+				? ""
+				: " §7• §e" + rarity + " блок";
 		return "§e§lЗапрос на удаление блока §f[" + x + ", " + y + ", " + z + "] "
 				+ "§7• §aшанс " + chance + "% "
-				+ "§7• §bосталось " + remaining + " блоков" + extra;
+				+ "§7• §bосталось " + remaining + " блоков" + extra + rarityLine;
 	}
 
 	public static String success(int removed) {
@@ -67,8 +70,8 @@ public final class StrikeText {
 		return "§eКисть уже максимального уровня (§f" + level + "§e).";
 	}
 
-	public static String needEmeralds(int need, int have) {
-		return "§c✘ Не хватает изумрудов: нужно §f" + need + "§c, есть §f" + have + "§c.";
+	public static String needMaterial(String name, int need, int have) {
+		return "§c✘ Не хватает: §f" + name + "§c — нужно §f" + need + "§c, есть §f" + have + "§c.";
 	}
 
 	public static String needXp(int need) {
@@ -81,6 +84,11 @@ public final class StrikeText {
 				: "";
 		return "§a✔ §aКисть улучшена до уровня §f" + level + "§a! Шанс §a" + chance + "%§a, лимит §f"
 				+ capacity + "§a блоков." + radiusNote;
+	}
+
+	/** Строка с требованиями к следующему уровню (для чата и книги). */
+	public static String upgradeCost(String materialName, int count, int xp) {
+		return materialName + " §7×§f" + count + " §8+ §f" + xp + " §7опыта";
 	}
 
 	public static String guideGiven() {
@@ -125,7 +133,7 @@ public final class StrikeText {
 				? "§7Радиус: §d" + radius + " §8(§d" + side + "×" + side + "×" + side + "§8) §7ПКМ — изменить\n"
 				: "§7Радиус: §8откроется на " + StrikeConfig.radiusUnlockLevel + " уровне\n";
 		return "§6§lStrike §7— кисть\n"
-				+ "§7Уровень: §f" + level + " §8| §7Шанс: §a" + chance + "%\n"
+				+ "§7Уровень: §f" + level + " §8| §7Шанс (обычный блок): §a" + chance + "%\n"
 				+ "§7Удалено блоков: §f" + used + "§7/§f" + capacity + "\n"
 				+ radiusLine
 				+ "§7Перезарядка: §f" + StrikeConfig.cooldownSeconds + " с\n"
@@ -159,6 +167,32 @@ public final class StrikeText {
 
 	public static String bookAuthor() {
 		return "Strike";
+	}
+
+	/** Понятные названия материалов прокачки для книги. */
+	public static String materialName(String id) {
+		switch (id) {
+			case "minecraft:dirt":
+				return "Земля";
+			case "minecraft:cobblestone":
+				return "Булыжник";
+			case "minecraft:sand":
+				return "Песок";
+			case "minecraft:oak_log":
+				return "Дубовое бревно";
+			case "minecraft:iron_ingot":
+				return "Железный слиток";
+			case "minecraft:gold_ingot":
+				return "Золотой слиток";
+			case "minecraft:diamond":
+				return "Алмаз";
+			case "minecraft:obsidian":
+				return "Обсидиан";
+			case "minecraft:netherite_ingot":
+				return "Незеритовый слиток";
+			default:
+				return id;
+		}
 	}
 
 	/** Страницы книги-гайда: подробная инструкция по использованию мода. */
@@ -201,6 +235,20 @@ public final class StrikeText {
 				+ "§7Кисть не ломает блоки обычным\n"
 				+ "§7способом: только запросом.");
 
+		pages.add("§6§lРедкость блока\n"
+				+ "\n"
+				+ "§7Чем реже блок — тем ниже шанс\n"
+				+ "§7его удаления:\n"
+				+ "\n"
+				+ "§fобычный §7× §a1.0\n"
+				+ "§fнеобычный §7× §e0.85\n"
+				+ "§fредкий §7× §e0.7\n"
+				+ "§foчень редкий §7× §e0.55\n"
+				+ "§fлегендарный §7× §c0.4\n"
+				+ "\n"
+				+ "§7Пример: на §fобсидиане§7 шанс\n"
+				+ "§7ниже, чем на §fземле§7.");
+
 		pages.add("§6§lПерезарядка\n"
 				+ "\n"
 				+ "§7После каждого запроса кисть\n"
@@ -228,17 +276,22 @@ public final class StrikeText {
 				+ "§7Шанс бросается §fодин раз§7\n"
 				+ "§7на весь запрос.");
 
-		pages.add("§6§lУровни и улучшение\n"
+		pages.add("§6§lПрокачка кисти\n"
 				+ "\n"
-				+ "§7Улучшение: §e/strike upgrade\n"
-				+ "§7(изумруды + опыт).\n"
+				+ "§7Каждый уровень требует §fсвои§7\n"
+				+ "§7блоки и опыт:\n"
 				+ "\n"
-				+ "§7Растёт §aшанс§7 удаления.\n"
-				+ "§7Растёт §fлимит§7 удаляемых блоков.\n"
-				+ "§7Открывается выбор §aрадиуса§7.\n"
+				+ upgradeCostLine(2) + "\n"
+				+ upgradeCostLine(3) + "\n"
+				+ upgradeCostLine(4) + "\n"
+				+ upgradeCostLine(5) + "\n"
+				+ upgradeCostLine(6) + "\n"
+				+ upgradeCostLine(7) + "\n"
+				+ upgradeCostLine(8) + "\n"
+				+ upgradeCostLine(9) + "\n"
+				+ upgradeCostLine(10) + "\n"
 				+ "\n"
-				+ "§7Лимит блоков сбрасывается\n"
-				+ "§7при улучшении кисти.");
+				+ "§7Команда: §e/strike upgrade");
 
 		List<String> levels = new ArrayList<>();
 		levels.add("§6§lУровни кисти\n"
@@ -261,14 +314,33 @@ public final class StrikeText {
 				+ "§e/strike cancel §7— отменить запрос\n"
 				+ "§e/strike help §7— список команд");
 
-		pages.add("§6§lОграничения\n"
-				+ "\n"
-				+ "§7Удалить нельзя: §fбедрок§7, §fбарьер§7,\n"
-				+ "§fкомандные блоки§7, §fпорталы§7,\n"
-				+ "§fспавнеры§7 и другие защищённые блоки.\n"
-				+ "\n"
-				+ "§7Настройки: §fconfig/strike.properties§7\n"
-				+ "§7§8(шансы, лимиты, перезарядка, радиус)§8");
+		// Правила — одной страницей, всё жёлтым
+		pages.add("§e§lПРАВИЛА §eStrike\n"
+				+ "§e1. Кисть выдаёт только команда\n"
+				+ "§e   §e/strike§e, из креатива её не достать.\n"
+				+ "§e2. ЛКМ по блоку — это запрос на\n"
+				+ "§e   удаление, а не обычное копание.\n"
+				+ "§e3. Сначала блок обводится рамкой,\n"
+				+ "§e   потом бросается шанс.\n"
+				+ "§e4. Шанс = шанс уровня × редкость:\n"
+				+ "§e   обычный ×1, необычный ×0.85,\n"
+				+ "§e   редкий ×0.7, очень редкий ×0.55,\n"
+				+ "§e   легендарный ×0.4.\n"
+				+ "§e5. Чем реже блок, тем ниже шанс\n"
+				+ "§e   его удаления.\n"
+				+ "§e6. После запроса кисть\n"
+				+ "§e   перезаряжается " + StrikeConfig.cooldownSeconds + " с.\n"
+				+ "§e7. Один запрос — один бросок шанса\n"
+				+ "§e   на всю область.\n"
+				+ "§e8. С 4 уровня ПКМ меняет радиус:\n"
+				+ "§e   1 → 3×3×3 → 5×5×5 → 7×7×7.\n"
+				+ "§e9. Улучшение тратит блоки и опыт,\n"
+				+ "§e   лимит блоков сбрасывается.\n"
+				+ "§e10. Бедрок, барьер, командные\n"
+				+ "§e   блоки, порталы и спавнеры\n"
+				+ "§e   удалить нельзя.\n"
+				+ "§e11. Мод работает в одиночной игре\n"
+				+ "§e   и на сервере.");
 
 		pages.add("§6§lПрава и сервер\n"
 				+ "\n"
@@ -282,6 +354,16 @@ public final class StrikeText {
 				+ "§7и на клиенте.");
 
 		return pages;
+	}
+
+	/** Строка требований для указанного уровня (используется в книге). */
+	private static String upgradeCostLine(int targetLevel) {
+		StrikeConfig.Material material = StrikeBalance.upgradeMaterial(targetLevel);
+		if (material == null) {
+			return "§fУр. " + targetLevel + " §7— §8максимум";
+		}
+		return "§fУр. " + targetLevel + " §7— §a" + materialName(material.item) + " §7×§f" + material.count
+				+ " §8+ §f" + StrikeBalance.upgradeXpCost(targetLevel) + " §7опыта";
 	}
 
 	/** Имя кисти (для отображения в инвентаре). */

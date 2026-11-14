@@ -1,11 +1,13 @@
 package dev.strike;
 
 import dev.strike.common.StrikeBalance;
+import dev.strike.common.StrikeConfig;
 import dev.strike.common.StrikeText;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -97,25 +99,38 @@ public final class StrikeCommands {
 			return 0;
 		}
 
-		int emeraldCost = StrikeBalance.upgradeEmeraldCost(level);
-		int xpCost = StrikeBalance.upgradeXpCost(level);
-		int have = countItem(player, Items.EMERALD);
-
-		if (have < emeraldCost) {
-			source.sendFailure(Component.literal(StrikeText.needEmeralds(emeraldCost, have)));
+		int newLevel = level + 1;
+		StrikeConfig.Material material = StrikeBalance.upgradeMaterial(newLevel);
+		if (material == null) {
+			source.sendSuccess(() -> Component.literal(StrikeText.maxLevel(level)), false);
 			return 0;
 		}
+
+		Item materialItem = materialItem(material.item);
+		if (materialItem == null) {
+			source.sendFailure(Component.literal("§c✘ Неизвестный материал прокачки: §f" + material.item));
+			return 0;
+		}
+
+		int need = material.count;
+		int have = countItem(player, materialItem);
+
+		if (have < need) {
+			source.sendFailure(Component.literal(
+					StrikeText.needMaterial(materialItem.getName().getString(), need, have)));
+			return 0;
+		}
+		int xpCost = StrikeBalance.upgradeXpCost(newLevel);
 		if (player.experienceLevel < xpCost) {
 			source.sendFailure(Component.literal(StrikeText.needXp(xpCost)));
 			return 0;
 		}
 
-		removeItem(player, Items.EMERALD, emeraldCost);
+		removeItem(player, materialItem, need);
 		if (xpCost > 0) {
 			player.giveExperienceLevels(-xpCost);
 		}
 
-		int newLevel = level + 1;
 		StrikeBrush.setLevel(brush, newLevel);
 
 		source.sendSuccess(() -> Component.literal(StrikeText.upgraded(
@@ -168,6 +183,16 @@ public final class StrikeCommands {
 		source.sendSuccess(() -> Component.literal(StrikeText.givenTo(target.getName().getString())), true);
 		target.sendSystemMessage(Component.literal(StrikeText.brushGiven()), true);
 		return 1;
+	}
+
+	/** Ищет предмет по id (например {@code minecraft:dirt}). */
+	private static Item materialItem(String id) {
+		for (Item item : BuiltInRegistries.ITEM) {
+			if (BuiltInRegistries.ITEM.getKey(item).toString().equals(id)) {
+				return item;
+			}
+		}
+		return null;
 	}
 
 	/** Ищет кисть Strike в инвентаре игрока. */
