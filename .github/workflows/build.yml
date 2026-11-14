@@ -43,7 +43,8 @@ jobs:
         run: |
           {
           for MC in 1.20.1 1.21.1 1.21.11 26.3; do
-            JAR=$(find ~/.gradle/caches/fabric-loom -path "*minecraft-merged*" -name "*${MC}*" 2>/dev/null | grep -v sources | head -1)
+            DIR=$(ls -d ~/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-merged*/${MC}* 2>/dev/null | head -1)
+            JAR=$(ls "$DIR"/*.jar 2>/dev/null | grep -v sources | head -1)
             echo ""
             echo "##################### MINECRAFT $MC #####################"
             echo "JAR=$JAR"
