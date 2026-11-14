@@ -77,7 +77,8 @@ public final class StrikeRequest {
 		int capacity = StrikeBalance.capacity(brushLevel);
 
 		if (used >= capacity) {
-			player.sendSystemMessage(Component.literal(StrikeText.quota(capacity)), true);
+			player.sendSystemMessage(
+					Component.literal(StrikeText.quota(capacity, StrikeBrush.limitCost(stack))), true);
 			return;
 		}
 

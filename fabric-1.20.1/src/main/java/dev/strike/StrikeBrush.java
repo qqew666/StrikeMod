@@ -3,9 +3,11 @@ package dev.strike;
 import dev.strike.common.StrikeBalance;
 import dev.strike.common.StrikeConfig;
 import dev.strike.common.StrikeText;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -90,6 +92,15 @@ public final class StrikeBrush {
 		refresh(stack);
 	}
 
+	/** Устанавливает количество уже удалённых блоков. */
+	public static void setUsed(ItemStack stack, int used) {
+		CompoundTag tag = stack.getOrCreateTag();
+		CompoundTag root = tag.getCompound(ROOT);
+		root.putInt(KEY_USED, Math.max(0, used));
+		tag.put(ROOT, root);
+		refresh(stack);
+	}
+
 	/** Устанавливает радиус удаления. */
 	public static void setRadius(ItemStack stack, int radius) {
 		CompoundTag tag = stack.getOrCreateTag();
@@ -110,6 +121,27 @@ public final class StrikeBrush {
 	private static CompoundTag root(ItemStack stack) {
 		CompoundTag tag = stack.getTag();
 		return tag == null ? new CompoundTag() : tag.getCompound(ROOT);
+	}
+
+	/** Ищет предмет по id (например {@code minecraft:dirt}). */
+	public static Item materialItem(String id) {
+		for (Item item : BuiltInRegistries.ITEM) {
+			if (BuiltInRegistries.ITEM.getKey(item).toString().equals(id)) {
+				return item;
+			}
+		}
+		return null;
+	}
+
+	/** Стоимость восстановления лимита блоков для этой кисти (текст для чата). */
+	public static String limitCost(ItemStack brush) {
+		StrikeConfig.Material material = StrikeBalance.limitMaterial(getLevel(brush));
+		if (material == null) {
+			return "бесплатно";
+		}
+		Item item = materialItem(material.item);
+		String name = item == null ? material.item : new ItemStack(item).getHoverName().getString();
+		return "§f" + name + " §7×§f" + material.count;
 	}
 
 	/** Обновляет отображаемое имя и описание кисти (видно игроку). */

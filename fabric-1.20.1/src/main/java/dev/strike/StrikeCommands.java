@@ -39,6 +39,8 @@ public final class StrikeCommands {
 							.executes(context -> StrikeRequest.confirm(context.getSource().getPlayerOrException())))
 					.then(Commands.literal("cancel")
 							.executes(context -> StrikeRequest.cancel(context.getSource().getPlayerOrException())))
+					.then(Commands.literal("limit")
+							.executes(context -> limit(context.getSource())))
 					.then(Commands.literal("help")
 							.executes(context -> help(context.getSource())))
 					.then(Commands.literal("give")
@@ -74,7 +76,8 @@ public final class StrikeCommands {
 					StrikeBalance.chancePercent(level),
 					StrikeBrush.getUsed(current),
 					StrikeBalance.capacity(level),
-					StrikeBrush.getRadius(current))), false);
+					StrikeBrush.getRadius(current),
+					StrikeBrush.limitCost(current))), false);
 		}
 		return 1;
 	}
@@ -106,7 +109,7 @@ public final class StrikeCommands {
 			return 0;
 		}
 
-		Item materialItem = materialItem(material.item);
+		Item materialItem = StrikeBrush.materialItem(material.item);
 		if (materialItem == null) {
 			source.sendFailure(Component.literal("§c✘ Неизвестный материал прокачки: §f" + material.item));
 			return 0;
@@ -155,7 +158,8 @@ public final class StrikeCommands {
 				StrikeBalance.chancePercent(level),
 				StrikeBrush.getUsed(brush),
 				StrikeBalance.capacity(level),
-				StrikeBrush.getRadius(brush))), false);
+				StrikeBrush.getRadius(brush),
+				StrikeBrush.limitCost(brush))), false);
 		return 1;
 	}
 
@@ -164,6 +168,57 @@ public final class StrikeCommands {
 		ServerPlayer player = source.getPlayerOrException();
 		player.getInventory().add(StrikeBook.createGuideBook());
 		source.sendSuccess(() -> Component.literal(StrikeText.guideGiven()), true);
+		return 1;
+	}
+
+	/** {@code /strike limit} — восстановить лимит удаляемых блоков. */
+	private static int limit(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+		ServerPlayer player = source.getPlayerOrException();
+		if (!StrikeMod.isMultiplayer()) {
+			source.sendFailure(Component.literal(StrikeText.multiplayerOnly()));
+			return 0;
+		}
+
+		ItemStack brush = findBrush(player);
+		if (brush == null) {
+			source.sendFailure(Component.literal(StrikeText.noBrush()));
+			return 0;
+		}
+
+		int level = StrikeBrush.getLevel(brush);
+		int used = StrikeBrush.getUsed(brush);
+		int capacity = StrikeBalance.capacity(level);
+
+		if (used < capacity) {
+			source.sendSuccess(() -> Component.literal(StrikeText.quotaNotEmpty(used, capacity)), false);
+			return 0;
+		}
+
+		StrikeConfig.Material material = StrikeBalance.limitMaterial(level);
+		if (material == null) {
+			StrikeBrush.setUsed(brush, 0);
+			source.sendSuccess(() -> Component.literal(StrikeText.limitRestored(capacity)), true);
+			return 1;
+		}
+
+		Item materialItem = StrikeBrush.materialItem(material.item);
+		if (materialItem == null) {
+			source.sendFailure(Component.literal("§c✘ Неизвестный материал прокачки: §f" + material.item));
+			return 0;
+		}
+
+		int have = countItem(player, materialItem);
+		if (have < material.count) {
+			source.sendFailure(Component.literal(
+					StrikeText.needMaterial(new ItemStack(materialItem).getHoverName().getString(),
+							material.count, have)));
+			return 0;
+		}
+
+		removeItem(player, materialItem, material.count);
+		StrikeBrush.setUsed(brush, 0);
+
+		source.sendSuccess(() -> Component.literal(StrikeText.limitRestored(capacity)), true);
 		return 1;
 	}
 
@@ -183,16 +238,6 @@ public final class StrikeCommands {
 		source.sendSuccess(() -> Component.literal(StrikeText.givenTo(target.getName().getString())), true);
 		target.displayClientMessage(Component.literal(StrikeText.brushGiven()), true);
 		return 1;
-	}
-
-	/** Ищет предмет по id (например {@code minecraft:dirt}). */
-	private static Item materialItem(String id) {
-		for (Item item : BuiltInRegistries.ITEM) {
-			if (BuiltInRegistries.ITEM.getKey(item).toString().equals(id)) {
-				return item;
-			}
-		}
-		return null;
 	}
 
 	/** Ищет кисть Strike в инвентаре игрока. */

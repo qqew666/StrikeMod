@@ -35,6 +35,23 @@ public final class StrikeBalance {
 		return StrikeConfig.upgradeMaterials.get(targetLevel);
 	}
 
+	/**
+	 * Материал для восстановления лимита блоков: те же блоки, что и на прокачку,
+	 * но вдвое меньше. На 1 уровне (когда прокачивать ещё не до чего) берётся материал
+	 * следующего уровня.
+	 */
+	public static StrikeConfig.Material limitMaterial(int level) {
+		StrikeConfig.Material material = upgradeMaterial(level);
+		if (material == null) {
+			material = upgradeMaterial(level + 1);
+		}
+		if (material == null) {
+			return null;
+		}
+		int count = Math.max(1, (material.count + 1) / 2);
+		return new StrikeConfig.Material(material.item, count);
+	}
+
 	/** Сколько уровней опыта нужно за улучшение до целевого уровня. */
 	public static int upgradeXpCost(int targetLevel) {
 		int base = targetLevel >= 0 && targetLevel < XP_COST.length ? XP_COST[targetLevel] : 5;

@@ -42,8 +42,20 @@ public final class StrikeText {
 		return "§c✘ §cЗапрос отклонён — шанс не сработал.";
 	}
 
-	public static String quota(int capacity) {
-		return "§c✘ Лимит блоков исчерпан (§f" + capacity + "§c). Улучшите кисть: §e/strike upgrade";
+	public static String quota(int capacity, String cost) {
+		return "§c✘ Лимит блоков исчерпан (§f" + capacity + "§c). Введите §e/strike limit§c, "
+				+ "чтобы восстановить (" + cost + "§c).";
+	}
+
+	/** Сообщение, что лимит ещё не исчерпан. */
+	public static String quotaNotEmpty(int used, int capacity) {
+		return "§eЛимит не исчерпан: §f" + used + "§7/§f" + capacity
+				+ "§7. Восстанавливается командой §e/strike limit§7.";
+	}
+
+	/** Сообщение об успешном восстановлении лимита. */
+	public static String limitRestored(int capacity) {
+		return "§a✔ §aЛимит блоков восстановлен: §f0§7/§f" + capacity + "§a блоков.";
 	}
 
 	public static String noBrush() {
@@ -127,7 +139,7 @@ public final class StrikeText {
 				+ (unlockLevel - 1) + " улучшения).";
 	}
 
-	public static String info(int level, int chance, int used, int capacity, int radius) {
+	public static String info(int level, int chance, int used, int capacity, int radius, String limitCost) {
 		int side = StrikeBalance.radiusSide(radius);
 		String radiusLine = StrikeBalance.radiusAvailable(level)
 				? "§7Радиус: §d" + radius + " §8(§d" + side + "×" + side + "×" + side + "§8) §7ПКМ — изменить\n"
@@ -137,6 +149,7 @@ public final class StrikeText {
 				+ "§7Удалено блоков: §f" + used + "§7/§f" + capacity + "\n"
 				+ radiusLine
 				+ "§7Перезарядка: §f" + StrikeConfig.cooldownSeconds + " с\n"
+				+ "§7Восстановить лимит: §e/strike limit §8(§7" + limitCost + "§8)\n"
 				+ "§7Улучшение: §e/strike upgrade";
 	}
 
@@ -276,6 +289,24 @@ public final class StrikeText {
 				+ "§7Шанс бросается §fодин раз§7\n"
 				+ "§7на весь запрос.");
 
+		pages.add("§6§lЛимит блоков\n"
+				+ "\n"
+				+ "§7У каждого уровня свой лимит:\n"
+				+ "§7уровень §f1§7 — §f10§7 блоков,\n"
+				+ "§7уровень §f5§7 — §f50§7, уровень §f10§7 — §f100§7.\n"
+				+ "\n"
+				+ "§7Когда лимит исчерпан, введите\n"
+				+ "§e/strike limit§7 — лимит восстановится.\n"
+				+ "\n"
+				+ "§7Платить нужно те же блоки, что и за\n"
+				+ "§7прокачку, но §fвдвое меньше§7:\n"
+				+ "§7на 1 уровне — §f2 земли§7,\n"
+				+ "§7на 5 уровне — §f2 бревна§7,\n"
+				+ "§7на 8 уровне — §f2 алмаза§7.\n"
+				+ "\n"
+				+ "§7Улучшение (§e/strike upgrade§7)\n"
+				+ "§7всё равно выгоднее: лимит растёт.");
+
 		pages.add("§6§lПрокачка кисти\n"
 				+ "\n"
 				+ "§7Каждый уровень требует §fсвои§7\n"
@@ -312,6 +343,7 @@ public final class StrikeText {
 				+ "§e/strike guide §7— эта книга\n"
 				+ "§e/strike confirm §7— подтвердить запрос\n"
 				+ "§e/strike cancel §7— отменить запрос\n"
+				+ "§e/strike limit §7— восстановить лимит блоков\n"
 				+ "§e/strike help §7— список команд");
 
 		// Правила — одной страницей, всё жёлтым
@@ -340,7 +372,11 @@ public final class StrikeText {
 				+ "§e   блоки, порталы и спавнеры\n"
 				+ "§e   удалить нельзя.\n"
 				+ "§e11. Мод работает в одиночной игре\n"
-				+ "§e   и на сервере.");
+				+ "§e   и на сервере.\n"
+				+ "§e12. Лимит блоков исчерпался —\n"
+				+ "§e   введите §e/strike limit§e и\n"
+				+ "§e   заплатите те же блоки, что за\n"
+				+ "§e   прокачку, но вдвое меньше.");
 
 		pages.add("§6§lПрава и сервер\n"
 				+ "\n"
