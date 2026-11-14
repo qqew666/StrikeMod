@@ -49,23 +49,23 @@ public final class StrikeBrush {
 		if (stack == null || stack.isEmpty()) {
 			return false;
 		}
-		return root(stack).getBoolean(KEY_BRUSH);
+		return root(stack).getBoolean(KEY_BRUSH).orElse(false);
 	}
 
 	/** Уровень кисти. */
 	public static int getLevel(ItemStack stack) {
-		int level = root(stack).getInt(KEY_LEVEL);
+		int level = root(stack).getInt(KEY_LEVEL).orElse(0);
 		return level <= 0 ? 1 : StrikeBalance.clampLevel(level);
 	}
 
 	/** Сколько блоков уже удалено этой кистью. */
 	public static int getUsed(ItemStack stack) {
-		return root(stack).getInt(KEY_USED);
+		return root(stack).getInt(KEY_USED).orElse(0);
 	}
 
 	/** Выбранный радиус удаления (1 = только целевой блок). */
 	public static int getRadius(ItemStack stack) {
-		int radius = root(stack).getInt(KEY_RADIUS);
+		int radius = root(stack).getInt(KEY_RADIUS).orElse(0);
 		return radius <= 0 ? 1 : StrikeBalance.clampRadius(radius);
 	}
 
@@ -84,7 +84,7 @@ public final class StrikeBrush {
 			return;
 		}
 		CompoundTag root = root(stack);
-		root.putInt(KEY_USED, root.getInt(KEY_USED) + count);
+		root.putInt(KEY_USED, root.getInt(KEY_USED).orElse(0) + count);
 		save(stack, root);
 		refresh(stack);
 	}
