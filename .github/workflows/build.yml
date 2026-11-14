@@ -104,3 +104,134 @@ jobs:
         with:
           files: artifacts/**/strike-fabric-*.jar
           generate_release_notes: true
+
+  publish:
+    name: Publish to CurseForge & Modrinth
+    needs: [ build, release ]
+    if: >-
+      always()
+      && needs.build.result == 'success'
+      && (needs.release.result == 'success' || needs.release.result == 'skipped')
+      && (startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download jars
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish to Modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MODRINTH_PROJECT_ID: ${{ secrets.MODRINTH_PROJECT_ID }}
+        run: |
+          UA="StrikeMod-CI (https://github.com/qqew666/StrikeMod)"
+          if [ -z "$MODRINTH_TOKEN" ] || [ -z "$MODRINTH_PROJECT_ID" ]; then
+            echo "::notice::Modrinth: секреты не заданы — пропускаю (MODRINTH_TOKEN, MODRINTH_PROJECT_ID)"
+            exit 0
+          fi
+
+          VERSION=$(grep -E '^mod_version=' gradle.properties | cut -d= -f2)
+          CHANGELOG="**Strike $VERSION** — кисть с шансом удаления блоков, только мультиплеер.
+
+          - Сборки под Minecraft 1.20.1, 1.21.1, 1.21.11, 26.3 (Fabric)
+          - Мод серверный: клиентам устанавливать не нужно
+          - Исходники и подробности: https://github.com/qqew666/StrikeMod/releases/tag/v$VERSION"
+
+          # Только версии Minecraft, которые Modrinth реально знает
+          WANT='["1.20.1","1.21.1","1.21.11","26.3"]'
+          KNOWN=$(curl -sS -H "User-Agent: $UA" https://api.modrinth.com/v2/tag/game_version | jq -c '[.[].version]')
+          GVS=$(jq -c -n --argjson want "$WANT" --argjson known "$KNOWN" '$want - ($want - $known)')
+          echo "game_versions: $GVS"
+
+          # Fabric API как обязательная зависимость
+          FABRIC_API_ID=$(curl -sS -H "User-Agent: $UA" https://api.modrinth.com/v2/project/fabric-api | jq -r '.id')
+          DEPS="[]"
+          if [ -n "$FABRIC_API_ID" ] && [ "$FABRIC_API_ID" != "null" ]; then
+            DEPS=$(jq -c -n --arg id "$FABRIC_API_ID" '[{project_id:$id, dependency_type:"required"}]')
+          fi
+
+          # Все jar (кроме sources) одним релизом
+          FILES='[]'
+          while IFS= read -r jar; do
+            B64=$(base64 -w0 "$jar")
+            FILES=$(jq --arg n "$(basename "$jar")" --arg d "$B64" \
+              '. + [{name:$n, primary:false, data:$d}]' <<<"$FILES")
+          done < <(find artifacts -type f -name 'strike-fabric-*.jar' ! -name '*-sources.jar' | sort)
+          FILES=$(jq 'if length > 0 then .[0].primary = true else . end' <<<"$FILES")
+          echo "files: $(jq -c '[.[].name]' <<<"$FILES")"
+
+          jq -n \
+            --arg pid "$MODRINTH_PROJECT_ID" \
+            --arg name "v$VERSION" \
+            --arg num "$VERSION" \
+            --arg changelog "$CHANGELOG" \
+            --argjson gvs "$GVS" \
+            --argjson files "$FILES" \
+            --argjson deps "$DEPS" \
+            '{project_id:$pid, name:$name, version_number:$num,
+              changelog:$changelog, changelog_type:"markdown",
+              game_versions:$gvs, loaders:["fabric"], version_type:"release",
+              files:$files, dependencies:$deps}' > /tmp/modrinth.json
+
+          CODE=$(curl -sS -o /tmp/modrinth_resp.json -w '%{http_code}' \
+            -X POST https://api.modrinth.com/v2/version \
+            -H "Authorization: $MODRINTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: $UA" \
+            --data @/tmp/modrinth.json)
+
+          if [ "$CODE" -ge 200 ] && [ "$CODE" -lt 300 ]; then
+            VID=$(jq -r '.id' /tmp/modrinth_resp.json)
+            echo "Modrinth OK: https://modrinth.com/version/$VID" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Modrinth HTTP $CODE"; cat /tmp/modrinth_resp.json; exit 1
+          fi
+
+      - name: Publish to CurseForge
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+          CURSEFORGE_PROJECT_ID: ${{ secrets.CURSEFORGE_PROJECT_ID }}
+        run: |
+          if [ -z "$CURSEFORGE_API_KEY" ] || [ -z "$CURSEFORGE_PROJECT_ID" ]; then
+            echo "::notice::CurseForge: секреты не заданы — пропускаю (CURSEFORGE_API_KEY, CURSEFORGE_PROJECT_ID)"
+            exit 0
+          fi
+
+          VERSION=$(grep -E '^mod_version=' gradle.properties | cut -d= -f2)
+          CHANGELOG="**Strike $VERSION** — кисть с шансом удаления блоков, только мультиплеер.
+
+          - Сборки под Minecraft 1.20.1, 1.21.1, 1.21.11, 26.3 (Fabric)
+          - Мод серверный: клиентам устанавливать не нужно
+          - Исходники и подробности: https://github.com/qqew666/StrikeMod/releases/tag/v$VERSION"
+
+          FAILED=0
+          while IFS= read -r jar; do
+            MV=$(basename "$jar" | sed -E 's/^strike-fabric-([0-9.]+)-.*$/\1/')
+            META=$(jq -n --arg cl "$CHANGELOG" --arg mv "$MV" \
+              '{displayName:("Strike " + $mv), changelogType:"markdown", changelog:$cl,
+                gameVersions:[$mv, "Fabric"], releaseType:"release"}')
+            echo "--- Upload $jar (game version: $MV)"
+            CODE=$(curl -sS -o /tmp/cf_resp.json -w '%{http_code}' \
+              -X POST "https://api.curseforge.com/v1/mods/$CURSEFORGE_PROJECT_ID/file" \
+              -H "x-api-key: $CURSEFORGE_API_KEY" \
+              -F "metadata=$META;type=application/json" \
+              -F "file=@$jar;type=application/java-archive")
+            if [ "$CODE" -ge 200 ] && [ "$CODE" -lt 300 ]; then
+              FID=$(jq -r '.id // empty' /tmp/cf_resp.json)
+              echo "OK: file id $FID"
+            else
+              echo "::error::CurseForge $MV -> HTTP $CODE"
+              cat /tmp/cf_resp.json
+              FAILED=1
+            fi
+          done < <(find artifacts -type f -name 'strike-fabric-*.jar' ! -name '*-sources.jar' | sort)
+
+          if [ "$FAILED" -eq 0 ]; then
+            echo "CurseForge OK (проект $CURSEFORGE_PROJECT_ID)" | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $FAILED

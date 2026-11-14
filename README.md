@@ -139,6 +139,21 @@ echo "eula=true" > fabric-1.20.1/run/eula.txt
 
 В папке `fabric-1.20.1/run` появится мир, а настройки мода — в `fabric-1.20.1/run/config/strike.properties`.
 
+### Публикация на площадки (CurseForge / Modrinth)
+
+При теге `v*` (или ручном запуске workflow **Build** → *Run workflow*) CI дополнительно выгружает
+все 4 джарника на **CurseForge** и **Modrinth**. Чтобы это заработало, добавь секреты в
+**Settings → Secrets and variables → Actions** репозитория:
+
+| Секрет | Что это |
+|--------|---------|
+| `MODRINTH_TOKEN` | PAT с <https://modrinth.com/settings/tokens> |
+| `MODRINTH_PROJECT_ID` | slug или ID проекта на Modrinth |
+| `CURSEFORGE_API_KEY` | ключ с <https://console.curseforge.com> → **API Keys** |
+| `CURSEFORGE_PROJECT_ID` | числовой ID проекта на CurseForge |
+
+Если секретов нет — job пропускается без ошибки, сборка и GitHub Release работают как обычно.
+
 ### Структура проекта
 
 ```
