@@ -1,9 +1,9 @@
 package dev.strike;
 
 import dev.strike.common.StrikeText;
-import net.minecraft.core.nbt.CompoundTag;
-import net.minecraft.core.nbt.ListTag;
-import net.minecraft.core.nbt.StringTag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 

@@ -5,7 +5,7 @@ import dev.strike.common.StrikeText;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemLore;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;

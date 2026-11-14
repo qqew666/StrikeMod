@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ public class StrikeMod implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, started) -> {
 			ServerPlayer player = handler.getPlayer();
 
-			if (!guidePlaced && StrikeWorld.placeGuideChest(player.level(), player)) {
+			if (!guidePlaced && StrikeWorld.placeGuideChest((ServerLevel) player.level(), player)) {
 				guidePlaced = true;
 			}
 

@@ -163,7 +163,7 @@ public final class StrikeCommands {
 			return 0;
 		}
 		target.getInventory().add(StrikeBrush.create(1));
-		source.sendSuccess(() -> Component.literal(StrikeText.givenTo(target.getName())), true);
+		source.sendSuccess(() -> Component.literal(StrikeText.givenTo(target.getName().getString())), true);
 		target.sendSystemMessage(Component.literal(StrikeText.brushGiven()), true);
 		return 1;
 	}

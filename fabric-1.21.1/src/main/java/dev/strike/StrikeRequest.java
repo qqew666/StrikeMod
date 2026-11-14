@@ -57,7 +57,7 @@ public final class StrikeRequest {
 
 		level.sendParticles(ParticleTypes.CRIT, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
 				10, 0.3, 0.3, 0.3, 0.0);
-		level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK, SoundSource.BLOCKS, 0.7f, 1.5f);
+		level.playSound((net.minecraft.world.entity.Entity) null, pos, SoundEvents.UI_BUTTON_CLICK, SoundSource.BLOCKS, 0.7f, 1.5f);
 
 		if (StrikeConfig.requireConfirmation) {
 			PENDING.put(player.getUUID(), new Pending(pos.immutable(), chance, level));
@@ -111,13 +111,13 @@ public final class StrikeRequest {
 			level.destroyBlock(pos, false);
 			level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
 					12, 0.35, 0.35, 0.35, 0.0);
-			level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING, SoundSource.BLOCKS, 0.9f, 1.4f);
+			level.playSound((net.minecraft.world.entity.Entity) null, pos, SoundEvents.NOTE_BLOCK_PLING, SoundSource.BLOCKS, 0.9f, 1.4f);
 			StrikeBrush.addUsed(stack);
 			player.displayClientMessage(Component.literal(StrikeText.success()), true);
 		} else {
 			level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
 					10, 0.25, 0.25, 0.25, 0.01);
-			level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS, SoundSource.BLOCKS, 0.8f, 0.7f);
+			level.playSound((net.minecraft.world.entity.Entity) null, pos, SoundEvents.NOTE_BLOCK_BASS, SoundSource.BLOCKS, 0.8f, 0.7f);
 			player.displayClientMessage(Component.literal(StrikeText.failure()), true);
 		}
 	}
