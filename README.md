@@ -22,10 +22,19 @@
 
 ## Установка
 
+Готовые сборки — в разделе [Releases](../../releases):
+
+| Файл | Версия Minecraft | Java | Нужен Fabric API |
+|------|------------------|------|------------------|
+| `strike-fabric-1.20.1-1.0.0.jar`  | 1.20.1  | 17 | 0.92.12+  |
+| `strike-fabric-1.21.1-1.0.0.jar`  | 1.21.1  | 21 | 0.116.18+ |
+| `strike-fabric-1.21.11-1.0.0.jar` | 1.21.11 | 21 | 0.141.6+  |
+| `strike-fabric-26.3-1.0.0.jar`    | 26.3   | 25 | 0.166.2+  |
+
 1. Установите на сервер [Fabric Loader](https://fabricmc.net/use/installer/) под нужную версию Minecraft.
 2. Положите в папку `mods`:
    * **Fabric API** (версии из таблицы выше),
-   * **Strike** — `.jar` из [Releases](../../releases) (файл `strike-fabric-<версия>.jar`).
+   * **Strike** — соответствующий `.jar`.
 3. Перезапустите сервер.
 
 Клиентам мод ставить **не нужно** — вся логика выполняется на сервере, а кисть выглядит как обычная ванильная кисть.
@@ -119,6 +128,16 @@ cd StrikeMod
 ```
 
 Готовые `.jar` появятся в `fabric-<версия>/build/libs/`.
+
+### Локальный запуск сервера
+
+```bash
+mkdir -p fabric-1.20.1/run
+echo "eula=true" > fabric-1.20.1/run/eula.txt
+./gradlew :fabric-1.20.1:runServer
+```
+
+В папке `fabric-1.20.1/run` появится мир, а настройки мода — в `fabric-1.20.1/run/config/strike.properties`.
 
 ### Структура проекта
 
