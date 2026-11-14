@@ -45,7 +45,7 @@
 
 Кисть блокирует обычное разрушение блоков: пока она в руке, ЛКМ всегда означает «запрос на удаление».
 
-В начале игры рядом со спавном появляется **сундук с книгой-гайдом** — там описаны все команды и правила.
+В начале игры (при первом входе на сервер) рядом с игроком появляется **сундук с книгой-гайдом** — там описаны все команды и правила.
 Если сундук потерялся, книгу можно взять командой `/strike guide`.
 
 ---
@@ -145,7 +145,7 @@ whether the block is actually removed (50% on level 1, up to 95% on level 10).
 * Multiplayer only (disabled in singleplayer).
 * The brush is only obtainable with `/strike` — never from the creative inventory.
 * Upgrading the brush raises both the deletion chance and the number of blocks it can delete.
-* A chest with a guide book appears at the world spawn.
+* A chest with a guide book appears next to the player on their first join.
 * Supported versions: **1.20.1, 1.21.1, 1.21.11, 26.3** (Fabric, Mojang mappings).
 * Server-side only — clients do not need the mod installed.
 

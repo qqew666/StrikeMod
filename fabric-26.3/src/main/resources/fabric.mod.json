@@ -3,7 +3,7 @@
 	"id": "strike",
 	"version": "${version}",
 	"name": "Strike",
-	"description": "${mod_description}",
+	"description": "Strike — кисть с шансом удаления блоков (только мультиплеер)",
 	"authors": [
 		"qqew666"
 	],
