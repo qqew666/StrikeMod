@@ -15,7 +15,7 @@ subprojects {
 	}
 
 	tasks.withType(ProcessResources).configureEach {
-		it.options.encoding = 'UTF-8'
+		it.filteringCharset = 'UTF-8'
 	}
 }
 
