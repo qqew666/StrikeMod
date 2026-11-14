@@ -117,7 +117,7 @@ public final class StrikeCommands {
 
 		if (have < need) {
 			source.sendFailure(Component.literal(
-					StrikeText.needMaterial(materialItem.getName().getString(), need, have)));
+					StrikeText.needMaterial(new ItemStack(materialItem).getHoverName().getString(), need, have)));
 			return 0;
 		}
 		int xpCost = StrikeBalance.upgradeXpCost(newLevel);
