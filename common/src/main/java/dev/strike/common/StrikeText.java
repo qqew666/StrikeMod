@@ -45,7 +45,7 @@ public final class StrikeText {
 	}
 
 	public static String multiplayerOnly() {
-		return "§c✘ Мод Strike работает только на мультиплеере.";
+		return "§c✘ Мод Strike настроен работать только на мультиплеере (multiplayerOnly=true).";
 	}
 
 	public static String brushGiven() {

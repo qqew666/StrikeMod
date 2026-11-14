@@ -3,7 +3,8 @@
 **Strike** — мод для Minecraft: волшебная **кисть**, которая удаляет блоки не напрямую, а **по запросу**.
 Нажал левую кнопку мыши по блоку — появился запрос на удаление, дальше бросается кость: сработал шанс — блок исчез.
 
-Работает **только на мультиплеере** (на выделенном сервере). В одиночной игре мод выключается.
+Работает **и в одиночной игре, и на мультиплеере** — по умолчанию мод активен везде.
+Если нужен режим «только мультиплеер» (как раньше) — поставь `multiplayerOnly=true` в конфиге.
 
 ---
 
@@ -26,10 +27,10 @@
 
 | Файл | Версия Minecraft | Java | Нужен Fabric API |
 |------|------------------|------|------------------|
-| `strike-fabric-1.20.1-1.0.0.jar`  | 1.20.1  | 17 | 0.92.12+  |
-| `strike-fabric-1.21.1-1.0.0.jar`  | 1.21.1  | 21 | 0.116.18+ |
-| `strike-fabric-1.21.11-1.0.0.jar` | 1.21.11 | 21 | 0.141.6+  |
-| `strike-fabric-26.3-1.0.0.jar`    | 26.3   | 25 | 0.166.2+  |
+| `strike-fabric-1.20.1-1.1.0.jar`  | 1.20.1  | 17 | 0.92.12+  |
+| `strike-fabric-1.21.1-1.1.0.jar`  | 1.21.1  | 21 | 0.116.18+ |
+| `strike-fabric-1.21.11-1.1.0.jar` | 1.21.11 | 21 | 0.141.6+  |
+| `strike-fabric-26.3-1.1.0.jar`    | 26.3   | 25 | 0.166.2+  |
 
 1. Установите на сервер [Fabric Loader](https://fabricmc.net/use/installer/) под нужную версию Minecraft.
 2. Положите в папку `mods`:
@@ -95,12 +96,12 @@
 
 ---
 
-## Настройки сервера
+## Настройки (сервера и одиночной игры)
 
 При первом запуске создаётся файл `config/strike.properties`:
 
 ```properties
-multiplayerOnly=true          # мод работает только на мультиплеере
+multiplayerOnly=false         # true — выключать мод в одиночной игре (по умолчанию везде)
 requireConfirmation=false     # требовать /strike confirm перед удалением
 baseChance=50                 # шанс на 1 уровне, %
 chancePerLevel=5              # прирост шанса за уровень, %
@@ -176,7 +177,7 @@ fabric-26.3/     сборка под Minecraft 26.3
 Left-click a block with the brush and a deletion request appears; a chance roll decides
 whether the block is actually removed (50% on level 1, up to 95% on level 10).
 
-* Multiplayer only (disabled in singleplayer).
+* Works both in singleplayer and on servers (`multiplayerOnly=true` restricts it to multiplayer).
 * The brush is only obtainable with `/strike` — never from the creative inventory.
 * Upgrading the brush raises both the deletion chance and the number of blocks it can delete.
 * A chest with a guide book appears next to the player on their first join.

@@ -54,7 +54,7 @@ public class StrikeMod implements ModInitializer {
 		LOGGER.info("Strike mod initialized (Minecraft 1.21.1)");
 	}
 
-	/** Мод активен ли сейчас (в одиночной игре — нет). */
+	/** Мод активен ли сейчас (в одиночке — только если не задан multiplayerOnly). */
 	public static boolean isMultiplayer() {
 		MinecraftServer current = server;
 		if (current == null) {

@@ -17,8 +17,8 @@ import java.util.Properties;
  */
 public final class StrikeConfig {
 
-	/** Мод работает только на мультиплеере (выключается в одиночной игре). */
-	public static boolean multiplayerOnly = true;
+	/** Выключает мод в одиночной игре (true — только мультиплеер; false — везде). */
+	public static boolean multiplayerOnly = false;
 
 	/** Требовать подтверждения запроса командой {@code /strike confirm}. */
 	public static boolean requireConfirmation = false;
