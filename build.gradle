@@ -14,7 +14,7 @@ subprojects {
 		it.options.encoding = 'UTF-8'
 	}
 
-	tasks.withType(AbstractCopyTask).configureEach {
+	tasks.withType(ProcessResources).configureEach {
 		it.options.encoding = 'UTF-8'
 	}
 }
