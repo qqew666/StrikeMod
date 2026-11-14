@@ -80,12 +80,12 @@ jobs:
               javap -cp "$JAR" "$c" 2>&1 | grep -E "public|protected|class |interface " | grep -E "$PAT|class |interface " | head -60
             done
             echo "===== SMALL CLASSES (full) ====="
-            for c in net.minecraft.world.item.component.CustomData net.minecraft.world.item.component.ItemLore net.minecraft.world.item.ItemLore net.minecraft.world.item.component.WrittenBookContent net.minecraft.server.network.Filterable net.minecraft.server.permissions.PermissionSet ; do
+            for c in net.minecraft.world.item.component.CustomData net.minecraft.world.item.component.ItemLore net.minecraft.world.item.ItemLore net.minecraft.world.item.component.WrittenBookContent net.minecraft.server.network.Filterable net.minecraft.server.permissions.PermissionSet net.minecraft.server.permissions.Permission net.minecraft.server.permissions.LevelBasedPermissionSet net.minecraft.world.entity.player.Player ; do
               echo "--- $c ---"
               javap -cp "$JAR" "$c" 2>&1 | head -30
             done
             echo "===== SOUND EVENTS ====="
-            javap -cp "$JAR" net.minecraft.sounds.SoundEvents 2>&1 | grep -E "BREAK|CLICK|NOTE_BLOCK|CHIME|EXPLODE|PICKUP|LEVELUP|PORTAL|POP|ITEM" | head -50
+            javap -cp "$JAR" net.minecraft.sounds.SoundEvents 2>&1 | grep -E "NOTE_BLOCK_BASS|NOTE_BLOCK_PLING|UI_BUTTON_CLICK|ITEM_BREAK|LEVER_CLICK|GENERIC_EXPLODE|EXPERIENCE_ORB_PICKUP|PLAYER_LEVELUP|AMETHYST_BLOCK_BREAK|STONE_BREAK|PISTON_CONTRACT|BLOCK_PLACE|BLOCK_HIT" | head -50
           done
           } | tee api-dump.txt
 

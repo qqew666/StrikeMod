@@ -22,25 +22,32 @@ public class StrikeMod implements ModInitializer {
 	/** Текущий сервер (null, если сервера нет). */
 	private static MinecraftServer server;
 
+	/** Гайд уже поставлен в этом запуске сервера. */
+	private static boolean guidePlaced;
+
 	@Override
 	public void onInitialize() {
 		StrikeConfig.load(FabricLoader.getInstance().getConfigDir());
 		StrikeEvents.register();
 		StrikeCommands.register();
 
-		// Запоминаем сервер и ставим сундук с книгой-гайдом рядом со спавном
 		ServerLifecycleEvents.SERVER_STARTED.register(started -> {
 			server = started;
-			StrikeWorld.placeGuideChest(started);
+			guidePlaced = false;
 		});
 		ServerLifecycleEvents.SERVER_STOPPED.register(stopped -> server = null);
 
-		// Подсказка при заходе на сервер
+		// При входе игрока: ставим сундук с книгой-гайдом и подсказываем команды
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, started) -> {
 			ServerPlayer player = handler.getPlayer();
+
+			if (!guidePlaced && StrikeWorld.placeGuideChest(player.level(), player)) {
+				guidePlaced = true;
+			}
+
 			player.displayClientMessage(Component.literal(
 					"§a§lStrike §7— мод активен. Введите §e/strike§7, чтобы получить кисть. "
-							+ "Книга-гайд лежит в сундуке рядом со спавном."), false);
+							+ "Книга-гайд лежит в сундуке рядом с вами."), false);
 		});
 
 		LOGGER.info("Strike mod initialized (Minecraft 1.20.1)");

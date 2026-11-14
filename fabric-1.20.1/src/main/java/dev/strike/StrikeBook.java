@@ -1,9 +1,9 @@
 package dev.strike;
 
 import dev.strike.common.StrikeText;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.core.nbt.CompoundTag;
+import net.minecraft.core.nbt.ListTag;
+import net.minecraft.core.nbt.StringTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -34,5 +34,24 @@ public final class StrikeBook {
 		tag.put("display", display);
 
 		return stack;
+	}
+
+	/** Является ли предмет нашей книгой-гайдом (по содержимому страниц). */
+	public static boolean isGuideBook(ItemStack stack) {
+		if (stack == null || stack.isEmpty() || !stack.is(Items.WRITTEN_BOOK)) {
+			return false;
+		}
+		CompoundTag tag = stack.getTag();
+		if (tag == null) {
+			return false;
+		}
+		ListTag pages = tag.getList("pages", 8);
+		for (int i = 0; i < pages.size(); i++) {
+			String page = pages.getString(i);
+			if (page.contains("Strike")) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

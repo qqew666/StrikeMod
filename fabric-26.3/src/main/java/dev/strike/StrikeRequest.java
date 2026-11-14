@@ -41,18 +41,18 @@ public final class StrikeRequest {
 		int capacity = StrikeBalance.capacity(brushLevel);
 
 		if (used >= capacity) {
-			player.displayClientMessage(Component.literal(StrikeText.quota(capacity)), true);
+			player.sendSystemMessage(Component.literal(StrikeText.quota(capacity)), true);
 			return;
 		}
 
 		if (isProtected(state)) {
-			player.displayClientMessage(Component.literal(StrikeText.protectedBlock()), true);
+			player.sendSystemMessage(Component.literal(StrikeText.protectedBlock()), true);
 			return;
 		}
 
 		int chance = StrikeBalance.chancePercent(brushLevel);
 
-		player.displayClientMessage(Component.literal(
+		player.sendSystemMessage(Component.literal(
 				StrikeText.request(pos.getX(), pos.getY(), pos.getZ(), chance, capacity - used)), true);
 
 		level.sendParticles(ParticleTypes.CRIT, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
@@ -61,7 +61,7 @@ public final class StrikeRequest {
 
 		if (StrikeConfig.requireConfirmation) {
 			PENDING.put(player.getUUID(), new Pending(pos.immutable(), chance, level));
-			player.displayClientMessage(Component.literal(StrikeText.confirmHint()), false);
+			player.sendSystemMessage(Component.literal(StrikeText.confirmHint()), false);
 		} else {
 			resolve(player, level, pos, stack, chance);
 		}
@@ -71,24 +71,24 @@ public final class StrikeRequest {
 	public static int confirm(ServerPlayer player) {
 		Pending pending = PENDING.remove(player.getUUID());
 		if (pending == null) {
-			player.displayClientMessage(Component.literal(StrikeText.noPendingRequest()), true);
+			player.sendSystemMessage(Component.literal(StrikeText.noPendingRequest()), true);
 			return 0;
 		}
 
 		ItemStack stack = StrikeCommands.findBrush(player);
 		if (stack == null) {
-			player.displayClientMessage(Component.literal(StrikeText.noBrush()), true);
+			player.sendSystemMessage(Component.literal(StrikeText.noBrush()), true);
 			return 0;
 		}
 
 		ServerLevel level = pending.level();
 		BlockState state = level.getBlockState(pending.pos());
 		if (state.isAir()) {
-			player.displayClientMessage(Component.literal(StrikeText.noPendingRequest()), true);
+			player.sendSystemMessage(Component.literal(StrikeText.noPendingRequest()), true);
 			return 0;
 		}
 
-		player.displayClientMessage(Component.literal(StrikeText.requestConfirmed()), true);
+		player.sendSystemMessage(Component.literal(StrikeText.requestConfirmed()), true);
 		resolve(player, level, pending.pos(), stack, pending.chance());
 		return 1;
 	}
@@ -96,10 +96,10 @@ public final class StrikeRequest {
 	/** Отменяет отложенный запрос. */
 	public static int cancel(ServerPlayer player) {
 		if (PENDING.remove(player.getUUID()) == null) {
-			player.displayClientMessage(Component.literal(StrikeText.noPendingRequest()), true);
+			player.sendSystemMessage(Component.literal(StrikeText.noPendingRequest()), true);
 			return 0;
 		}
-		player.displayClientMessage(Component.literal("§7Запрос отменён."), true);
+		player.sendSystemMessage(Component.literal("§7Запрос отменён."), true);
 		return 1;
 	}
 
@@ -113,12 +113,12 @@ public final class StrikeRequest {
 					12, 0.35, 0.35, 0.35, 0.0);
 			level.playSound(null, pos, SoundEvents.NOTE_BLOCK_PLING, SoundSource.BLOCKS, 0.9f, 1.4f);
 			StrikeBrush.addUsed(stack);
-			player.displayClientMessage(Component.literal(StrikeText.success()), true);
+			player.sendSystemMessage(Component.literal(StrikeText.success()), true);
 		} else {
 			level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5,
 					10, 0.25, 0.25, 0.25, 0.01);
 			level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS, SoundSource.BLOCKS, 0.8f, 0.7f);
-			player.displayClientMessage(Component.literal(StrikeText.failure()), true);
+			player.sendSystemMessage(Component.literal(StrikeText.failure()), true);
 		}
 	}
 

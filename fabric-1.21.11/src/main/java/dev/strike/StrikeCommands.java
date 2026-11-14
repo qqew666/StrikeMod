@@ -25,7 +25,7 @@ public final class StrikeCommands {
 	public static void register() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(Commands.literal("strike")
-					.requires(source -> source.hasPermission(0))
+					.requires(source -> true)
 					.executes(context -> main(context.getSource()))
 					.then(Commands.literal("upgrade")
 							.executes(context -> upgrade(context.getSource())))
@@ -40,7 +40,7 @@ public final class StrikeCommands {
 					.then(Commands.literal("help")
 							.executes(context -> help(context.getSource())))
 					.then(Commands.literal("give")
-							.requires(source -> source.hasPermission(2))
+							.requires(source -> StrikePermissions.isOperator(source))
 							.then(Commands.argument("player", EntityArgument.player())
 									.executes(context -> give(context.getSource(),
 											(ServerPlayer) EntityArgument.getPlayer(context, "player"))))));
@@ -163,7 +163,7 @@ public final class StrikeCommands {
 			return 0;
 		}
 		target.getInventory().add(StrikeBrush.create(1));
-		source.sendSuccess(() -> Component.literal(StrikeText.givenTo(target.getGameProfile().getName())), true);
+		source.sendSuccess(() -> Component.literal(StrikeText.givenTo(target.getName())), true);
 		target.displayClientMessage(Component.literal(StrikeText.brushGiven()), true);
 		return 1;
 	}

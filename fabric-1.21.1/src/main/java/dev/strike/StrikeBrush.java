@@ -3,12 +3,14 @@ package dev.strike;
 import dev.strike.common.StrikeBalance;
 import dev.strike.common.StrikeText;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.component.NbtComponent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ListComponent;
+import net.minecraft.world.item.ItemLore;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+
+import java.util.List;
 
 /**
  * Кисть Strike. В Minecraft 1.21+ данные и описание предмета хранятся в компонентах.
@@ -33,7 +35,7 @@ public final class StrikeBrush {
 		root.putBoolean(KEY_BRUSH, true);
 		root.putInt(KEY_LEVEL, StrikeBalance.clampLevel(level));
 		root.putInt(KEY_USED, 0);
-		stack.set(DataComponents.CUSTOM_DATA, NbtComponent.of(root));
+		stack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
 
 		refresh(stack);
 		return stack;
@@ -76,12 +78,12 @@ public final class StrikeBrush {
 	}
 
 	private static CompoundTag root(ItemStack stack) {
-		NbtComponent data = stack.get(DataComponents.CUSTOM_DATA);
-		return data == null ? new CompoundTag() : data.copyNbt();
+		CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+		return data == null ? new CompoundTag() : data.copyTag();
 	}
 
 	private static void save(ItemStack stack, CompoundTag root) {
-		stack.set(DataComponents.CUSTOM_DATA, NbtComponent.of(root));
+		stack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
 	}
 
 	/** Обновляет отображаемое имя и описание кисти (видно игроку). */
@@ -93,9 +95,9 @@ public final class StrikeBrush {
 
 		stack.set(DataComponents.CUSTOM_NAME, Component.literal(StrikeText.brushName()));
 
-		ListComponent lore = ListComponent.create();
-		lore.add(Component.literal("§7Уровень: §f" + level + " §8| §7шанс: §a" + chance + "%"));
-		lore.add(Component.literal("§7Удалено блоков: §f" + used + "§7/§f" + capacity));
+		ItemLore lore = new ItemLore(List.of(
+				Component.literal("§7Уровень: §f" + level + " §8| §7шанс: §a" + chance + "%"),
+				Component.literal("§7Удалено блоков: §f" + used + "§7/§f" + capacity)));
 		stack.set(DataComponents.LORE, lore);
 	}
 }
