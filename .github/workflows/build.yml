@@ -41,25 +41,27 @@ jobs:
       - name: Dump Minecraft API
         if: always()
         run: |
-          JAR=""
-          for j in $(find ~/.gradle/caches/fabric-loom -name "*.jar" | grep -v sources); do
-            if unzip -l "$j" 2>/dev/null | grep -q "net/minecraft/world/entity/Entity.class"; then JAR="$j"; break; fi
-          done
           {
+          for MC in 1.20.1 1.21.1 1.21.11 26.3; do
+            JAR=$(find ~/.gradle/caches/fabric-loom -path "*minecraft-merged*" -name "*${MC}*" 2>/dev/null | grep -v sources | head -1)
+            echo ""
+            echo "##################### MINECRAFT $MC #####################"
             echo "JAR=$JAR"
+            if [ -z "$JAR" ]; then echo "NOT FOUND"; continue; fi
             echo "===== CLASS NAMES OF INTEREST ====="
-            unzip -l "$JAR" 2>/dev/null | grep -E "NbtComponent|CustomData|ListComponent|ComponentList|ItemLore|WrittenBook|LoreComponent|Filterable|InteractionResult" | awk '{print $4}'
+            unzip -l "$JAR" 2>/dev/null | grep -E "NbtComponent|CustomData|ListComponent|ComponentList|ItemLore|WrittenBook|LoreComponent|Filterable|InteractionResult" | awk '{print $4}' | head -30
             echo "===== API ====="
             for c in net.minecraft.world.entity.Entity \
                      net.minecraft.server.level.ServerPlayer \
                      net.minecraft.server.MinecraftServer \
                      net.minecraft.commands.CommandSourceStack \
                      net.minecraft.world.level.Level \
-                     net.minecraft.world.level.ServerLevel \
+                     net.minecraft.server.level.ServerLevel \
                      net.minecraft.world.level.block.entity.BlockEntity \
                      net.minecraft.world.level.block.entity.ChestBlockEntity \
                      net.minecraft.core.component.DataComponents \
                      net.minecraft.nbt.CompoundTag \
+                     net.minecraft.core.nbt.CompoundTag \
                      net.minecraft.world.item.component.CustomData \
                      net.minecraft.world.item.ItemLore \
                      net.minecraft.network.chat.Component \
@@ -70,12 +72,13 @@ jobs:
                      net.minecraft.server.network.Filterable \
                      com.mojang.authlib.GameProfile ; do
               echo "--- $c ---"
-              javap -cp "$JAR" "$c" 2>&1 | grep -E "public|protected|class |interface " | head -80
+              javap -cp "$JAR" "$c" 2>&1 | grep -E "public|protected|class |interface " | head -60
             done
             echo "===== SOUND EVENTS ====="
-            javap -cp "$JAR" net.minecraft.sounds.SoundEvents 2>&1 | grep -E "BREAK|CLICK|NOTE_BLOCK|CHIME|EXPLODE|PICKUP|LEVELUP|PORTAL|POP|ITEM" | head -60
+            javap -cp "$JAR" net.minecraft.sounds.SoundEvents 2>&1 | grep -E "BREAK|CLICK|NOTE_BLOCK|CHIME|EXPLODE|PICKUP|LEVELUP|PORTAL|POP|ITEM" | head -50
             echo "===== WRITTEN BOOK CONTENT ====="
-            javap -cp "$JAR" net.minecraft.world.item.component.WrittenBookContent 2>&1 | head -30
+            javap -cp "$JAR" net.minecraft.world.item.component.WrittenBookContent 2>&1 | head -26
+          done
           } | tee api-dump.txt
 
       - name: Upload API dump
