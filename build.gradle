@@ -8,6 +8,15 @@ subprojects {
 	repositories {
 		mavenCentral()
 	}
+
+	// UTF-8 для исходников и ресурсов (в описании мода есть кириллица)
+	tasks.withType(JavaCompile).configureEach {
+		it.options.encoding = 'UTF-8'
+	}
+
+	tasks.withType(AbstractCopyTask).configureEach {
+		it.options.encoding = 'UTF-8'
+	}
 }
 
 // Удобная задача: собрать все версии сразу
